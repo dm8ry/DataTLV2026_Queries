@@ -22,3 +22,31 @@ from
 pg_settings 
  where name='max_connections';
 
+
+## Slide 8
+
+select 
+    A.total_connections, 
+    A.active_connections, 
+    B.max_connections,
+    round((100 * A.total_connections::numeric / B.max_connections::numeric), 2) connections_utilization_pctg
+from
+  (select count(1) as total_connections, sum(case when state='active' then 1 else 0 end) as active_connections from pg_stat_activity) A,
+  (select setting as max_connections from pg_settings where name='max_connections') B;
+
+
+## Slide 10
+
+select 
+datname as db_name, 
+count(1) as num_active_connections 
+from 
+pg_stat_activity 
+where 
+state='active' 
+group by 1 
+order by 2 desc;
+
+
+
+
