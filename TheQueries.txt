@@ -122,6 +122,61 @@ select pg_terminate_backend(<process_id>);
 
 
 
+## Slide 29
+
+grep "connection authorized" postgresql-2023-02-01_100000.log | awk ' { printf("%s %s\n", substr($2, 1, 5), substr($6, index($6,"user=")+5, index($6, "database=")-6)); } ' | awk '{count[$2]++} END {for (word in count) print word, count[word]}' | sort -k 2,2 -n -r
+
+db_user_1 1234
+db_user_2 98
+db_user_3 7
+db_user_4 5
+db_user_5 1
+
+
+
+## Slide 31
+
+with
+a as 
+(select dbid, queryid, query, calls s from pg_stat_statements),
+b as 
+(select dbid, queryid, query, calls s from pg_stat_statements, pg_sleep(1))
+select
+        pd.datname as db_name, 
+        substr(a.query, 1, 1000) as the_query, 
+        sum(b.s-a.s) as runs_per_second
+from a, b, pg_database pd
+where 
+  a.dbid= b.dbid 
+and 
+a.queryid = b.queryid 
+ and 
+    pd.oid=a.dbid
+group by 1, 2
+order by 3 desc;
+
+
+
+## Slide 37
+
+Reducing the parameter random_page_cost value 
+relative to the parameter seq_page_cost 
+will cause the system to prefer index scans. 
+
+Default values:
+
+postgres=# show random_page_cost;
+ random_page_cost
+------------------
+ 4
+
+postgres=# show seq_page_cost;
+ seq_page_cost
+---------------
+ 1
+
+
+
 ## Slide 40
 
 SELECT 
